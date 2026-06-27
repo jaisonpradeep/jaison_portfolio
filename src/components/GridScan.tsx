@@ -332,41 +332,41 @@ export default function GridScan({
   className,
   style
 }: GridScanProps) {
-  const containerRef = useRef(null);
-  const videoRef = useRef(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
-  const rendererRef = useRef(null);
-  const materialRef = useRef(null);
-  const composerRef = useRef(null);
-  const bloomRef = useRef(null);
-  const chromaRef = useRef(null);
-  const rafRef = useRef(null);
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+  const materialRef = useRef<THREE.ShaderMaterial | null>(null);
+  const composerRef = useRef<EffectComposer | null>(null);
+  const bloomRef = useRef<BloomEffect | null>(null);
+  const chromaRef = useRef<ChromaticAberrationEffect | null>(null);
+  const rafRef = useRef<number | null>(null);
 
   const [modelsReady, setModelsReady] = useState(false);
   const [uiFaceActive, setUiFaceActive] = useState(false);
 
-  const lookTarget = useRef(new THREE.Vector2(0, 0));
-  const tiltTarget = useRef(0);
-  const yawTarget = useRef(0);
+  const lookTarget = useRef<THREE.Vector2>(new THREE.Vector2(0, 0));
+  const tiltTarget = useRef<number>(0);
+  const yawTarget = useRef<number>(0);
 
-  const lookCurrent = useRef(new THREE.Vector2(0, 0));
-  const lookVel = useRef(new THREE.Vector2(0, 0));
-  const tiltCurrent = useRef(0);
-  const tiltVel = useRef(0);
-  const yawCurrent = useRef(0);
-  const yawVel = useRef(0);
+  const lookCurrent = useRef<THREE.Vector2>(new THREE.Vector2(0, 0));
+  const lookVel = useRef<THREE.Vector2>(new THREE.Vector2(0, 0));
+  const tiltCurrent = useRef<number>(0);
+  const tiltVel = useRef<number>(0);
+  const yawCurrent = useRef<number>(0);
+  const yawVel = useRef<number>(0);
 
   const MAX_SCANS = 8;
   const scanStartsRef = useRef<number[]>([]);
 
-  const pushScan = (t: number) => {
+  const pushScan = (t: number): void => {
     const arr = scanStartsRef.current.slice();
     if (arr.length >= MAX_SCANS) arr.shift();
     arr.push(t);
     scanStartsRef.current = arr;
     if (materialRef.current) {
       const u = materialRef.current.uniforms;
-      const buf = new Array(MAX_SCANS).fill(0);
+      const buf = new Array<number>(MAX_SCANS).fill(0);
       for (let i = 0; i < arr.length && i < MAX_SCANS; i++) buf[i] = arr[i];
       u.uScanStarts.value = buf;
       u.uScanCount.value = arr.length;
@@ -391,8 +391,8 @@ export default function GridScan({
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    let leaveTimer = null;
-    const onMove = e => {
+    let leaveTimer: ReturnType<typeof setTimeout> | null = null;
+    const onMove = (e: MouseEvent): void => {
       if (uiFaceActive) return;
       if (leaveTimer) {
         clearTimeout(leaveTimer);
@@ -403,29 +403,31 @@ export default function GridScan({
       const ny = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
       lookTarget.current.set(nx, ny);
     };
-    const onClick = async () => {
+    const onClick = async (): Promise<void> => {
       const nowSec = performance.now() / 1000;
       if (scanOnClick) pushScan(nowSec);
       if (
         enableGyro &&
         typeof window !== 'undefined' &&
         window.DeviceOrientationEvent &&
-        DeviceOrientationEvent.requestPermission
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (DeviceOrientationEvent as any).requestPermission
       ) {
         try {
-          await DeviceOrientationEvent.requestPermission();
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          await (DeviceOrientationEvent as any).requestPermission();
         } catch {
           // noop
         }
       }
     };
-    const onEnter = () => {
+    const onEnter = (): void => {
       if (leaveTimer) {
         clearTimeout(leaveTimer);
         leaveTimer = null;
       }
     };
-    const onLeave = () => {
+    const onLeave = (): void => {
       if (uiFaceActive) return;
       if (leaveTimer) clearTimeout(leaveTimer);
       leaveTimer = window.setTimeout(
@@ -464,7 +466,7 @@ export default function GridScan({
     renderer.setClearColor(0x000000, 0);
     container.appendChild(renderer.domElement);
 
-    const uniforms = {
+    const uniforms: Record<string, THREE.IUniform> = {
       iResolution: {
         value: new THREE.Vector3(container.clientWidth, container.clientHeight, renderer.getPixelRatio())
       },
@@ -487,7 +489,7 @@ export default function GridScan({
       uScanDuration: { value: scanDuration },
       uScanDelay: { value: scanDelay },
       uScanDirection: { value: scanDirection === 'backward' ? 1 : scanDirection === 'pingpong' ? 2 : 0 },
-      uScanStarts: { value: new Array(MAX_SCANS).fill(0) },
+      uScanStarts: { value: new Array<number>(MAX_SCANS).fill(0) },
       uScanCount: { value: 0 }
     };
 
@@ -506,7 +508,7 @@ export default function GridScan({
     const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material);
     scene.add(quad);
 
-    let composer = null;
+    let composer: EffectComposer | null = null;
     if (enablePost) {
       composer = new EffectComposer(renderer);
       composerRef.current = composer;
@@ -533,7 +535,7 @@ export default function GridScan({
       composer.addPass(effectPass);
     }
 
-    const onResize = () => {
+    const onResize = (): void => {
       renderer.setSize(container.clientWidth, container.clientHeight);
       material.uniforms.iResolution.value.set(container.clientWidth, container.clientHeight, renderer.getPixelRatio());
       if (composerRef.current) composerRef.current.setSize(container.clientWidth, container.clientHeight);
@@ -541,7 +543,7 @@ export default function GridScan({
     window.addEventListener('resize', onResize);
 
     let last = performance.now();
-    const tick = () => {
+    const tick = (): void => {
       const now = performance.now();
       const dt = Math.max(0, Math.min(0.1, (now - last) / 1000));
       last = now;
@@ -682,7 +684,7 @@ export default function GridScan({
 
   useEffect(() => {
     if (!enableGyro) return;
-    const handler = e => {
+    const handler = (e: DeviceOrientationEvent): void => {
       if (uiFaceActive) return;
       const gamma = e.gamma ?? 0;
       const beta = e.beta ?? 0;
@@ -699,7 +701,7 @@ export default function GridScan({
 
   useEffect(() => {
     let canceled = false;
-    const load = async () => {
+    const load = async (): Promise<void> => {
       try {
         await Promise.all([
           faceapi.nets.tinyFaceDetector.loadFromUri(modelsPath),
@@ -721,7 +723,7 @@ export default function GridScan({
     let lastDetect = 0;
     const video = videoRef.current;
 
-    const start = async () => {
+    const start = async (): Promise<void> => {
       if (!enableWebcam || !modelsReady) return;
       if (!video) return;
 
@@ -738,7 +740,7 @@ export default function GridScan({
 
       const opts = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 });
 
-      const detect = async ts => {
+      const detect = async (ts: number): Promise<void> => {
         if (stop) return;
 
         if (ts - lastDetect >= 33) {
@@ -811,8 +813,8 @@ export default function GridScan({
     return () => {
       stop = true;
       if (video) {
-        const stream = video.srcObject;
-        if (stream) stream.getTracks().forEach(t => t.stop());
+        const stream = video.srcObject as MediaStream | null;
+        if (stream) stream.getTracks().forEach((t) => t.stop());
         video.pause();
         video.srcObject = null;
       }
@@ -839,12 +841,19 @@ export default function GridScan({
   );
 }
 
-function srgbColor(hex) {
+function srgbColor(hex: string): THREE.Color {
   const c = new THREE.Color(hex);
   return c.convertSRGBToLinear();
 }
 
-function smoothDampVec2(current, target, currentVelocity, smoothTime, maxSpeed, deltaTime) {
+function smoothDampVec2(
+  current: THREE.Vector2,
+  target: THREE.Vector2,
+  currentVelocity: THREE.Vector2,
+  smoothTime: number,
+  maxSpeed: number,
+  deltaTime: number
+): THREE.Vector2 {
   const out = current.clone();
   smoothTime = Math.max(0.0001, smoothTime);
   const omega = 2 / smoothTime;
@@ -873,7 +882,14 @@ function smoothDampVec2(current, target, currentVelocity, smoothTime, maxSpeed, 
   return out;
 }
 
-function smoothDampFloat(current, target, velRef, smoothTime, maxSpeed, deltaTime) {
+function smoothDampFloat(
+  current: number,
+  target: number,
+  velRef: { v: number },
+  smoothTime: number,
+  maxSpeed: number,
+  deltaTime: number
+): { value: number; v: number } {
   smoothTime = Math.max(0.0001, smoothTime);
   const omega = 2 / smoothTime;
   const x = omega * deltaTime;
@@ -900,19 +916,19 @@ function smoothDampFloat(current, target, velRef, smoothTime, maxSpeed, deltaTim
   return { value: out, v: velRef.v };
 }
 
-function medianPush(buf, v, maxLen) {
+function medianPush(buf: number[], v: number, maxLen: number): void {
   buf.push(v);
   if (buf.length > maxLen) buf.shift();
 }
 
-function median(buf) {
+function median(buf: number[]): number {
   if (buf.length === 0) return 0;
   const a = [...buf].sort((x, y) => x - y);
   const mid = Math.floor(a.length / 2);
   return a.length % 2 ? a[mid] : (a[mid - 1] + a[mid]) * 0.5;
 }
 
-function centroid(points) {
+function centroid(points: { x: number; y: number }[]): { x: number; y: number } {
   let x = 0,
     y = 0;
   const n = points.length || 1;
@@ -923,6 +939,6 @@ function centroid(points) {
   return { x: x / n, y: y / n };
 }
 
-function dist2(a, b) {
+function dist2(a: { x: number; y: number }, b: { x: number; y: number }): number {
   return Math.hypot(a.x - b.x, a.y - b.y);
 }
