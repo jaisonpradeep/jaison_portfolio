@@ -2,7 +2,7 @@
 
 import * as faceapi from 'face-api.js';
 import { BloomEffect, ChromaticAberrationEffect, EffectComposer, EffectPass, RenderPass } from 'postprocessing';
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import './GridScan.css';
 
@@ -271,6 +271,37 @@ void main(){
 }
 `;
 
+interface GridScanProps {
+  enableWebcam?: boolean;
+  showPreview?: boolean;
+  modelsPath?: string;
+  sensitivity?: number;
+  lineThickness?: number;
+  linesColor?: string;
+  scanColor?: string;
+  scanOpacity?: number;
+  gridScale?: number;
+  lineStyle?: 'solid' | 'dashed' | 'dotted';
+  lineJitter?: number;
+  scanDirection?: 'forward' | 'backward' | 'pingpong';
+  enablePost?: boolean;
+  bloomIntensity?: number;
+  bloomThreshold?: number;
+  bloomSmoothing?: number;
+  chromaticAberration?: number;
+  noiseIntensity?: number;
+  scanGlow?: number;
+  scanSoftness?: number;
+  scanPhaseTaper?: number;
+  scanDuration?: number;
+  scanDelay?: number;
+  enableGyro?: boolean;
+  scanOnClick?: boolean;
+  snapBackDelay?: number;
+  className?: string;
+  style?: React.CSSProperties;
+}
+
 export default function GridScan({
   enableWebcam = false,
   showPreview = false,
@@ -300,7 +331,7 @@ export default function GridScan({
   snapBackDelay = 250,
   className,
   style
-}) {
+}: GridScanProps) {
   const containerRef = useRef(null);
   const videoRef = useRef(null);
 
