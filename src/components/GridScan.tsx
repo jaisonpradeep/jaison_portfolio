@@ -391,7 +391,7 @@ export default function GridScan({
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    let leaveTimer: ReturnType<typeof setTimeout> | null = null;
+    let leaveTimer: number | null = null;
     const onMove = (e: MouseEvent): void => {
       if (uiFaceActive) return;
       if (leaveTimer) {
