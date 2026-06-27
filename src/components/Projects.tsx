@@ -8,6 +8,7 @@ import {
   useTransform,
   MotionValue,
 } from "framer-motion";
+import type { Variants } from "framer-motion";
 import { Github, ExternalLink, ArrowUpRight } from "lucide-react";
 import Magnetic from "./Magnetic";
 import { useLenisScrollProgress } from "./useLenisScroll";
@@ -118,11 +119,11 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
   const isEven = index % 2 === 0;
 
   /* Text stagger */
-  const textVariants = {
+  const textVariants: Variants = {
     hidden: {},
     visible: { transition: { staggerChildren: 0.09, delayChildren: 0.15 } },
   };
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 28 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.75, ease: [0.16, 1, 0.3, 1] } },
   };
