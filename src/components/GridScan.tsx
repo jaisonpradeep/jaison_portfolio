@@ -357,9 +357,9 @@ export default function GridScan({
   const yawVel = useRef(0);
 
   const MAX_SCANS = 8;
-  const scanStartsRef = useRef([]);
+  const scanStartsRef = useRef<number[]>([]);
 
-  const pushScan = t => {
+  const pushScan = (t: number) => {
     const arr = scanStartsRef.current.slice();
     if (arr.length >= MAX_SCANS) arr.shift();
     arr.push(t);
@@ -373,10 +373,10 @@ export default function GridScan({
     }
   };
 
-  const bufX = useRef([]);
-  const bufY = useRef([]);
-  const bufT = useRef([]);
-  const bufYaw = useRef([]);
+  const bufX = useRef<number[]>([]);
+  const bufY = useRef<number[]>([]);
+  const bufT = useRef<number[]>([]);
+  const bufYaw = useRef<number[]>([]);
 
   const s = THREE.MathUtils.clamp(sensitivity, 0, 1);
   const skewScale = THREE.MathUtils.lerp(0.06, 0.2, s);
