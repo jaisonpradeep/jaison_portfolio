@@ -1,0 +1,276 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-outfit), system-ui, sans-serif;
+  --font-display: var(--font-barlow-condensed), var(--font-space-grotesk), sans-serif;
+  --font-heading: var(--font-space-grotesk), sans-serif;
+  --font-condensed: var(--font-barlow-condensed), sans-serif;
+  --font-playfair: var(--font-playfair), serif;
+  
+  --color-electric-blue: #2563eb;
+  --color-cyan-accent: #06b6d4;
+  --color-purple-accent: #8b5cf6;
+  --color-pink-accent: #ec4899;
+  --color-orange-accent: #f97316;
+  --color-emerald-accent: #10b981;
+  --color-pearl: #f8f9fc;
+  --color-off-white: #fafafa;
+  
+  --animate-aurora-slow: aurora 25s ease infinite;
+  --animate-aurora-medium: aurora-reverse 20s ease infinite;
+  --animate-float-slow: float 15s ease-in-out infinite;
+  --animate-float-medium: float-reverse 12s ease-in-out infinite;
+  --animate-pulse-subtle: pulse-subtle 4s ease-in-out infinite;
+  --animate-marquee: marquee 30s linear infinite;
+  --animate-marquee-reverse: marquee-reverse 35s linear infinite;
+  --animate-shimmer-sweep: shimmer-sweep 1.4s ease-in-out;
+
+  @keyframes shimmer-sweep {
+    0% { transform: translateX(-100%) skewX(-15deg); }
+    100% { transform: translateX(250%) skewX(-15deg); }
+  }
+
+  @keyframes aurora {
+    0% {
+      transform: translate(0px, 0px) rotate(0deg) scale(1);
+    }
+    33% {
+      transform: translate(30px, -50px) rotate(120deg) scale(1.1);
+    }
+    66% {
+      transform: translate(-20px, 20px) rotate(240deg) scale(0.95);
+    }
+    100% {
+      transform: translate(0px, 0px) rotate(360deg) scale(1);
+    }
+  }
+  @keyframes aurora-reverse {
+    0% {
+      transform: translate(0px, 0px) rotate(360deg) scale(1);
+    }
+    33% {
+      transform: translate(-40px, 40px) rotate(240deg) scale(0.9);
+    }
+    66% {
+      transform: translate(20px, -30px) rotate(120deg) scale(1.15);
+    }
+    100% {
+      transform: translate(0px, 0px) rotate(0deg) scale(1);
+    }
+  }
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-15px) rotate(3deg);
+    }
+  }
+  @keyframes float-reverse {
+    0%, 100% {
+      transform: translateY(0) rotate(0deg);
+    }
+    50% {
+      transform: translateY(12px) rotate(-4deg);
+    }
+  }
+  @keyframes pulse-subtle {
+    0%, 100% {
+      opacity: 0.8;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.03);
+    }
+  }
+  @keyframes marquee {
+    0% {
+      transform: translateX(0%);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+  @keyframes marquee-reverse {
+    0% {
+      transform: translateX(-50%);
+    }
+    100% {
+      transform: translateX(0%);
+    }
+  }
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #0f172a;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  overflow-x: hidden;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Prevent native scroll from fighting Lenis */
+  overscroll-behavior: none;
+}
+
+/* Let Lenis own scrolling — no competing native smooth-scroll */
+html {
+  scroll-behavior: auto !important;
+}
+
+/* Promote parallax/animated images to compositor layer */
+.will-change-transform {
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* ── CSS Containment — limits layout recalc to each section ─────────────
+   "contain: layout paint" tells the browser this section's layout changes
+   won't affect anything outside it, enabling per-section paint optimization.
+   NOTE: Don't add "style" containment — it breaks CSS custom property inheritance.
+   NOTE: #scroll-story is EXCLUDED — contain breaks GSAP pin (pinned element
+   needs to escape its containing block to become position:fixed).
+───────────────────────────────────────────────────────────────────────────── */
+section:not(#scroll-story) {
+  contain: layout paint;
+}
+
+/* ── Hardware acceleration for all sections (GPU compositor layer) ──────── */
+/* #scroll-story excluded — translate3d creates a new containing block which
+   prevents GSAP from pinning the inner container via position:fixed */
+#home, #about, #skills, #projects, #contact {
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* ── Barlow Condensed display font fine-tuning ───────────────────────── */
+.font-display {
+  font-family: var(--font-display);
+  /* Barlow Condensed reads best with very tight tracking at large sizes */
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+  font-feature-settings: "kern" 1, "liga" 1;
+  text-rendering: optimizeLegibility;
+}
+
+/* Explicit condensed utility — use for Lenis-style ultra-bold headers */
+.font-condensed {
+  font-family: var(--font-condensed);
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.font-playfair {
+  font-family: var(--font-playfair), serif;
+}
+
+/* Custom Cursor Hide default on Desktop */
+@media (min-width: 1024px) {
+  body {
+    cursor: none;
+  }
+  a, button, [role="button"], input, textarea, select {
+    cursor: none;
+  }
+}
+
+/* Grainy noise texture overlay */
+.bg-grain {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  content: "";
+  opacity: 0.025;
+  pointer-events: none;
+  z-index: 9999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+/* Glassmorphism Styles — blur kept ≤12px (GPU perf threshold) */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 
+    0 4px 30px rgba(0, 0, 0, 0.02),
+    inset 0 1px 1px rgba(255, 255, 255, 0.8),
+    0 1px 3px rgba(0, 0, 0, 0.01);
+  /* Own compositor layer — backdrop-filter forces this anyway */
+  will-change: transform;
+}
+
+.glass-panel-heavy {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 
+    0 10px 40px rgba(0, 0, 0, 0.04),
+    inset 0 1px 2px rgba(255, 255, 255, 0.9);
+}
+
+/* Premium radial gradient text mask */
+.gradient-text-vibrant {
+  background: linear-gradient(135deg, #2563eb 0%, #8b5cf6 30%, #ec4899 70%, #f97316 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.8);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}
+
+/* Hide GSAP ScrollTrigger markers */
+.gsap-marker-start, .gsap-marker-end, .gsap-marker-scroller-start, .gsap-marker-scroller-end {
+  display: none !important;
+}
+
+/* ── Lithos hero animations ─────────────────────────────────────────────── */
+@keyframes heroReveal {
+  0%   { opacity: 0; transform: translateY(28px); filter: blur(12px); }
+  100% { opacity: 1; transform: translateY(0);    filter: blur(0); }
+}
+@keyframes heroFadeUp {
+  0%   { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes heroZoom {
+  0%   { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+.hero-anim {
+  opacity: 0;
+  animation-fill-mode: forwards;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hero-reveal { animation-name: heroReveal; animation-duration: 1.1s; }
+.hero-fade   { animation-name: heroFadeUp; animation-duration: 1s; }
+.hero-zoom   { animation: heroZoom 1.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-anim, .hero-zoom { animation: none; opacity: 1; }
+}
+
